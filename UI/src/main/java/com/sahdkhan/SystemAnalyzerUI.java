@@ -14,7 +14,11 @@ import javafx.stage.Stage;
 
 public class SystemAnalyzerUI extends Application
 {
-    private String name = "";
+    private VBox parentContainer;
+    private TextField nameInputField;
+    private Text greetingText;
+    private VBox greetingLayout;
+    private VBox greetingButtonContainer;
 
     public static void main( String[] args )
     {
@@ -24,111 +28,182 @@ public class SystemAnalyzerUI extends Application
     @Override
     public void start( Stage primaryStage )
     {
-        VBox parentContainer = new VBox(); // All components live inside this.
-        parentContainer.setAlignment( Pos.CENTER );
-        parentContainer.setSpacing( 10 );
+        parentContainer = creatParentContainer();
 
-        TextField nameInputField = new TextField();
-        nameInputField.setMaxWidth( 500 );
-        nameInputField.setMaxHeight( 100 );
-        nameInputField.setAlignment( Pos.CENTER );
-
-        BorderStroke borderStroke = new BorderStroke(
-                Color.BLACK,
-                BorderStrokeStyle.SOLID,
-                CornerRadii.EMPTY,
-                BorderWidths.DEFAULT
-        );
-        Border border = new Border( borderStroke );
-        nameInputField.setBorder( border );
-
-        parentContainer.getChildren().add( nameInputField );
+        nameInputField = createNameInputField();
 
         // Creating components
-        Text greeting = new Text();
-        greeting.setFill( Color.BLUE );
-
-        Text appTitle = new Text( "Click for greeting." );
-        appTitle.setFill( Color.WHITE );
+        greetingText = createGreetingText();
 
         // Layout for getGreetingButton
-        VBox getGreetingButton = new VBox( 10 );
-        getGreetingButton.setBackground( Background.fill( Color.BLUE ) );
-        getGreetingButton.getChildren().add( appTitle );
-        getGreetingButton.setAlignment( Pos.CENTER );
-        getGreetingButton.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
-        getGreetingButton.setPadding( new Insets( 10, 10, 10, 10 ) );
+        greetingButtonContainer = createGetGreetingButton();
 
         // Layout for greeting
-        VBox greetingLayout = new VBox( 10 );
-        greetingLayout.getChildren().add( greeting );
-        greetingLayout.setSpacing( 10 );
-        greetingLayout.setAlignment( Pos.CENTER );
-        greetingLayout.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
-        greetingLayout.setPadding( new Insets( 10, 10, 10, 10 ) );
+        greetingLayout = createGreetingLayout();
 
-        // Adding button to close the greeting.
-        Button closeButton = new Button( "Clear Greeting" );
-        closeButton.setBackground( Background.fill( Color.BLACK ) );
-        closeButton.setTextFill( Color.WHITE );
-        closeButton.setCursor( Cursor.HAND );
-        greetingLayout.getChildren().add( closeButton );
-
-        closeButton.setOnMouseClicked( event ->
-        {
-            parentContainer.getChildren().remove( greetingLayout );
-            parentContainer.getChildren().add( nameInputField );
-            parentContainer.getChildren().add( getGreetingButton );
-        } );
-
-        // Border for appTitle
-        borderStroke = new BorderStroke(
-                Color.BLUE,
-                BorderStrokeStyle.SOLID,
-                CornerRadii.EMPTY,
-                new BorderWidths( 10.0, 10.0, 10.0, 10.0 )
-        );
-        Border appTitleBorder = new Border( borderStroke );
-
-        // appTitle events
-        getGreetingButton.setOnMouseEntered( event ->
-        {
-            getGreetingButton.setBackground( Background.fill( Color.WHITE ) );
-            appTitle.setFill( Color.BLUE );
-            getGreetingButton.setBorder( appTitleBorder );
-        } );
-
-        getGreetingButton.setCursor( Cursor.HAND );
-
-        getGreetingButton.setOnMouseExited( event ->
-        {
-            getGreetingButton.setBackground( Background.fill( Color.BLUE ) );
-            appTitle.setFill( Color.WHITE );
-            getGreetingButton.setBorder( null );
-        } );
-
-        getGreetingButton.setOnMouseClicked( event ->
-        {
-            name = nameInputField.getText();
-            greeting.setText( "Hello " + name );
-            nameInputField.clear();
-
-            parentContainer.getChildren().remove( nameInputField );
-            parentContainer.getChildren().remove( getGreetingButton );
-
-            if ( !parentContainer.getChildren().contains( greetingLayout ) )
-            {
-                parentContainer.getChildren().add( greetingLayout );
-            }
-        } );
-
-        // Adding appTitleLayout to parentContainer
-        parentContainer.getChildren().add( getGreetingButton );
+        // Adding greetingButtonContainer to parentContainer
+        parentContainer.getChildren().add( greetingButtonContainer );
 
         // Adding parentContainer to scene.
         Scene scene = new Scene( parentContainer, 1000, 1000 );
         scene.setFill( Color.HONEYDEW );
         primaryStage.setScene( scene );
         primaryStage.show();
+    }
+
+    /**
+     * Creates the container that holds the "Get Greeting" Button.
+     * <br>
+     * Creation of the container involves:
+     * <ul>
+     *     <li>Setting the background, alignment, maxSize, and padding for the container itself.</li>
+     *     <li>Creating a button and setting the text and color of the text within the button</li>
+     *     <li>Adding events to the button such as mouseEntered, mouseExited, and mouseClicked</li>
+     * </ul>
+     * @return VBox that contains the button to get the greeting.
+     */
+    private VBox createGetGreetingButton()
+    {
+        VBox greetingButtonContainer = new VBox( 10 );
+        greetingButtonContainer.setAlignment( Pos.CENTER );
+        greetingButtonContainer.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
+        greetingButtonContainer.setPadding( new Insets( 10 ) );
+
+        // Creating the button
+        Button getGreetingButton = new Button( "Click for greeting." );
+        getGreetingButton.setTextFill( Color.WHITE );
+        getGreetingButton.setBackground( new Background( new BackgroundFill(
+                        Color.BLUE,
+                        CornerRadii.EMPTY,
+                        Insets.EMPTY ) ) );
+
+        BorderStroke borderStroke = new BorderStroke(
+                Color.BLUE,
+                BorderStrokeStyle.SOLID,
+                CornerRadii.EMPTY,
+                new BorderWidths( 1.0 )
+        );
+
+        getGreetingButton.setOnMouseEntered( event ->
+        {
+            getGreetingButton.setBackground( new Background( new BackgroundFill(
+                    Color.WHITE,
+                    CornerRadii.EMPTY,
+                    Insets.EMPTY ) )  );
+            getGreetingButton.setTextFill( Color.BLUE );
+            getGreetingButton.setBorder( new Border( borderStroke ) );
+        } );
+
+        getGreetingButton.setCursor( Cursor.HAND );
+
+        getGreetingButton.setOnMouseExited( event ->
+        {
+            getGreetingButton.setBackground( new Background( new BackgroundFill(
+                    Color.BLUE,
+                    CornerRadii.EMPTY,
+                    Insets.EMPTY ) )  );
+            getGreetingButton.setTextFill( Color.WHITE );
+            getGreetingButton.setBorder( null );
+        } );
+
+        getGreetingButton.setOnMouseClicked( event ->
+        {
+            greetingText.setText( "Hello " + nameInputField.getText() );
+            nameInputField.clear();
+
+            nameInputField.setVisible( false );
+            nameInputField.setManaged( false );
+            greetingButtonContainer.setVisible( false );
+            greetingButtonContainer.setManaged( false );
+
+            greetingLayout.setVisible( true );
+            greetingLayout.setManaged( true );
+        } );
+
+        // Add the button the container
+        greetingButtonContainer.getChildren().add( getGreetingButton );
+        return greetingButtonContainer;
+    }
+
+    /**
+     * Creates the container that holds the greeting text and the clear button.
+     * @return VBox with the greetingText, clearButton, and styles applied.
+     */
+    private VBox createGreetingLayout()
+    {
+        VBox greetingLayout = new VBox( 10 );
+        greetingLayout.getChildren().add( greetingText );
+        greetingLayout.setSpacing( 10 );
+        greetingLayout.setAlignment( Pos.CENTER );
+        greetingLayout.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
+        greetingLayout.setPadding( new Insets( 10 ) );
+
+        Button clearButton = createClearGreetingButton();
+        greetingLayout.getChildren().add( clearButton );
+        parentContainer.getChildren().add( greetingLayout );
+        greetingLayout.setVisible( false );
+        greetingLayout.setManaged( false );
+        return greetingLayout;
+    }
+
+    private Button createClearGreetingButton()
+    {
+        // Adding button to close the greeting.
+        Button clearButton = new Button( "Clear Greeting" );
+        clearButton.setBackground( new Background( new BackgroundFill(
+                Color.BLACK,
+                CornerRadii.EMPTY,
+                Insets.EMPTY ) )  );
+        clearButton.setTextFill( Color.WHITE );
+        clearButton.setCursor( Cursor.HAND );
+
+        clearButton.setOnMouseClicked( event ->
+        {
+            greetingLayout.setVisible( false );
+            greetingLayout.setManaged( false );
+
+            nameInputField.setVisible( true );
+            nameInputField.setManaged( true );
+            greetingButtonContainer.setVisible( true );
+            greetingButtonContainer.setManaged( true );
+        } );
+        return clearButton;
+    }
+
+    private TextField createNameInputField()
+    {
+        TextField nameInputField = new TextField();
+        nameInputField.setMaxWidth( 500 );
+        nameInputField.setMaxHeight( 100 );
+        nameInputField.setAlignment( Pos.CENTER );
+        BorderStroke borderStroke = new BorderStroke( Color.BLACK,
+                BorderStrokeStyle.SOLID,
+                CornerRadii.EMPTY,
+                BorderWidths.DEFAULT );
+        nameInputField.setBorder( new Border( borderStroke ) );
+        parentContainer.getChildren().add( nameInputField );
+        nameInputField.setVisible( true );
+        nameInputField.setManaged( true );
+        return nameInputField;
+    }
+
+    /**
+     * Creates the parent container.
+     * This container contains all the components in the scene.
+     * @return VBox with the alignment and spacing set.
+     */
+    private VBox creatParentContainer()
+    {
+        VBox parentContainer = new VBox();
+        parentContainer.setAlignment( Pos.CENTER );
+        parentContainer.setSpacing( 10 );
+        return parentContainer;
+    }
+
+    private Text createGreetingText()
+    {
+        Text greeting = new Text();
+        greeting.setFill( Color.BLUE );
+        return greeting;
     }
 }
