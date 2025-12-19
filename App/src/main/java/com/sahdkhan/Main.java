@@ -1,17 +1,26 @@
 package com.sahdkhan;
 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+public class Main extends Application
+{
+    public static void main( String[] args )
+    {
+        launch( args );
+    }
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+    @Override
+    public void start( Stage primaryStage )
+    {
+        SystemAnalyzerUI systemAnalyzerUI = new SystemAnalyzerUI();
+        Scene scene = new Scene( systemAnalyzerUI.getRootContainer(), 1000, 1000 );
+        scene.setFill( Color.HONEYDEW );
+        primaryStage.setScene( scene );
+        primaryStage.show();
     }
 }

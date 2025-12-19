@@ -1,209 +1,201 @@
 package com.sahdkhan;
 
-import javafx.application.Application;
+import com.sahdkhan.collections.InstalledProgram;
+import com.sahdkhan.programs.Programs;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 
-public class SystemAnalyzerUI extends Application
+import java.io.IOException;
+import java.util.List;
+
+public class SystemAnalyzerUI
 {
-    private VBox parentContainer;
-    private TextField nameInputField;
-    private Text greetingText;
-    private VBox greetingLayout;
-    private VBox greetingButtonContainer;
+    private final BorderPane rootContainer;
+    private ScrollPane installedProgramsSection;
+    private StackPane loadingPane;
 
-    public static void main( String[] args )
+    public SystemAnalyzerUI()
     {
-        launch( args );
-    }
-
-    @Override
-    public void start( Stage primaryStage )
-    {
-        parentContainer = creatParentContainer();
-
-        nameInputField = createNameInputField();
-
-        // Creating components
-        greetingText = createGreetingText();
-
-        // Layout for getGreetingButton
-        greetingButtonContainer = createGetGreetingButton();
-
-        // Layout for greeting
-        greetingLayout = createGreetingLayout();
-
-        // Adding greetingButtonContainer to parentContainer
-        parentContainer.getChildren().add( greetingButtonContainer );
-
-        // Adding parentContainer to scene.
-        Scene scene = new Scene( parentContainer, 1000, 1000 );
-        scene.setFill( Color.HONEYDEW );
-        primaryStage.setScene( scene );
-        primaryStage.show();
-    }
-
-    /**
-     * Creates the container that holds the "Get Greeting" Button.
-     * <br>
-     * Creation of the container involves:
-     * <ul>
-     *     <li>Setting the background, alignment, maxSize, and padding for the container itself.</li>
-     *     <li>Creating a button and setting the text and color of the text within the button</li>
-     *     <li>Adding events to the button such as mouseEntered, mouseExited, and mouseClicked</li>
-     * </ul>
-     * @return VBox that contains the button to get the greeting.
-     */
-    private VBox createGetGreetingButton()
-    {
-        VBox greetingButtonContainer = new VBox( 10 );
-        greetingButtonContainer.setAlignment( Pos.CENTER );
-        greetingButtonContainer.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
-        greetingButtonContainer.setPadding( new Insets( 10 ) );
-
-        // Creating the button
-        Button getGreetingButton = new Button( "Click for greeting." );
-        getGreetingButton.setTextFill( Color.WHITE );
-        getGreetingButton.setBackground( new Background( new BackgroundFill(
-                        Color.BLUE,
-                        CornerRadii.EMPTY,
-                        Insets.EMPTY ) ) );
-
-        BorderStroke borderStroke = new BorderStroke(
-                Color.BLUE,
-                BorderStrokeStyle.SOLID,
-                CornerRadii.EMPTY,
-                new BorderWidths( 1.0 )
-        );
-
-        getGreetingButton.setOnMouseEntered( event ->
-        {
-            getGreetingButton.setBackground( new Background( new BackgroundFill(
-                    Color.WHITE,
-                    CornerRadii.EMPTY,
-                    Insets.EMPTY ) )  );
-            getGreetingButton.setTextFill( Color.BLUE );
-            getGreetingButton.setBorder( new Border( borderStroke ) );
-        } );
-
-        getGreetingButton.setCursor( Cursor.HAND );
-
-        getGreetingButton.setOnMouseExited( event ->
-        {
-            getGreetingButton.setBackground( new Background( new BackgroundFill(
-                    Color.BLUE,
-                    CornerRadii.EMPTY,
-                    Insets.EMPTY ) )  );
-            getGreetingButton.setTextFill( Color.WHITE );
-            getGreetingButton.setBorder( null );
-        } );
-
-        getGreetingButton.setOnMouseClicked( event ->
-        {
-            greetingText.setText( "Hello " + nameInputField.getText() );
-            nameInputField.clear();
-
-            nameInputField.setVisible( false );
-            nameInputField.setManaged( false );
-            greetingButtonContainer.setVisible( false );
-            greetingButtonContainer.setManaged( false );
-
-            greetingLayout.setVisible( true );
-            greetingLayout.setManaged( true );
-        } );
-
-        // Add the button the container
-        greetingButtonContainer.getChildren().add( getGreetingButton );
-        return greetingButtonContainer;
-    }
-
-    /**
-     * Creates the container that holds the greeting text and the clear button.
-     * @return VBox with the greetingText, clearButton, and styles applied.
-     */
-    private VBox createGreetingLayout()
-    {
-        VBox greetingLayout = new VBox( 10 );
-        greetingLayout.getChildren().add( greetingText );
-        greetingLayout.setSpacing( 10 );
-        greetingLayout.setAlignment( Pos.CENTER );
-        greetingLayout.setMaxSize( Region.USE_PREF_SIZE, Region.USE_PREF_SIZE );
-        greetingLayout.setPadding( new Insets( 10 ) );
-
-        Button clearButton = createClearGreetingButton();
-        greetingLayout.getChildren().add( clearButton );
-        parentContainer.getChildren().add( greetingLayout );
-        greetingLayout.setVisible( false );
-        greetingLayout.setManaged( false );
-        return greetingLayout;
-    }
-
-    private Button createClearGreetingButton()
-    {
-        // Adding button to close the greeting.
-        Button clearButton = new Button( "Clear Greeting" );
-        clearButton.setBackground( new Background( new BackgroundFill(
-                Color.BLACK,
-                CornerRadii.EMPTY,
-                Insets.EMPTY ) )  );
-        clearButton.setTextFill( Color.WHITE );
-        clearButton.setCursor( Cursor.HAND );
-
-        clearButton.setOnMouseClicked( event ->
-        {
-            greetingLayout.setVisible( false );
-            greetingLayout.setManaged( false );
-
-            nameInputField.setVisible( true );
-            nameInputField.setManaged( true );
-            greetingButtonContainer.setVisible( true );
-            greetingButtonContainer.setManaged( true );
-        } );
-        return clearButton;
-    }
-
-    private TextField createNameInputField()
-    {
-        TextField nameInputField = new TextField();
-        nameInputField.setMaxWidth( 500 );
-        nameInputField.setMaxHeight( 100 );
-        nameInputField.setAlignment( Pos.CENTER );
-        BorderStroke borderStroke = new BorderStroke( Color.BLACK,
-                BorderStrokeStyle.SOLID,
-                CornerRadii.EMPTY,
-                BorderWidths.DEFAULT );
-        nameInputField.setBorder( new Border( borderStroke ) );
-        parentContainer.getChildren().add( nameInputField );
-        nameInputField.setVisible( true );
-        nameInputField.setManaged( true );
-        return nameInputField;
+        rootContainer = createRootContainer();
+        createUI();
     }
 
     /**
      * Creates the parent container.
      * This container contains all the components in the scene.
+     *
      * @return VBox with the alignment and spacing set.
      */
-    private VBox creatParentContainer()
+    private BorderPane createRootContainer()
     {
-        VBox parentContainer = new VBox();
-        parentContainer.setAlignment( Pos.CENTER );
-        parentContainer.setSpacing( 10 );
+        BorderPane parentContainer = new BorderPane();
+        parentContainer.setStyle(
+                "-fx-background-color: " +
+                        "linear-gradient(from 0% 0% to 100% 100%, " +
+                        "rgba(90,85,158,1) 0%, " +
+                        "rgba(148,84,222,1) 29%, " +
+                        "rgba(85,41,207,1) 100%);"
+        );
         return parentContainer;
     }
 
-    private Text createGreetingText()
+    public void createUI()
     {
-        Text greeting = new Text();
-        greeting.setFill( Color.BLUE );
-        return greeting;
+        createInstalledProgramsButton();
+    }
+
+    private void createInstalledProgramsButton()
+    {
+        Button getInstalledProgramsButton = new Button( "Get Installed Programs" );
+        getInstalledProgramsButton.setTextFill( Color.WHITE );
+        getInstalledProgramsButton.setBackground( new Background( new BackgroundFill(
+                Color.BLACK,
+                CornerRadii.EMPTY,
+                Insets.EMPTY
+        ) ) );
+
+        getInstalledProgramsButton.setOnMouseClicked( e ->
+        {
+            getInstalledProgramsButton.setVisible( false );
+            getInstalledProgramsButton.setManaged( false );
+            loadingPane = createLoadingPane();
+            rootContainer.setRight( loadingPane );
+
+            loadInstalledProgramsAsync();
+        } );
+
+        rootContainer.setCenter( getInstalledProgramsButton );
+    }
+
+    private StackPane createLoadingPane()
+    {
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setMaxSize( 80, 80 );
+
+        StackPane pane = new StackPane( spinner );
+        pane.setAlignment( Pos.CENTER );
+        pane.setBackground( new Background( new BackgroundFill(
+                Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY
+        ) ) );
+
+        return pane;
+    }
+
+    private void loadInstalledProgramsAsync()
+    {
+        Task< List< InstalledProgram > > task = new Task<>()
+        {
+            @Override
+            protected List< InstalledProgram > call() throws IOException
+            {
+                return Programs.getInstalledPrograms();
+            }
+        };
+
+        task.setOnSucceeded( event ->
+        {
+            List< InstalledProgram > programs = task.getValue();
+            createInstalledProgramsSection( programs );
+            rootContainer.setRight( installedProgramsSection );
+        } );
+
+        task.setOnFailed( event ->
+        {
+            Throwable error = task.getException();
+            showError( error );
+        } );
+
+        Thread thread = new Thread( task, "InstalledProgramsLoader" );
+        thread.setDaemon( true );
+        thread.start();
+    }
+
+
+    private void createInstalledProgramsSection( List< InstalledProgram > installedPrograms )
+    {
+        installedProgramsSection = new ScrollPane();
+        installedProgramsSection.setHbarPolicy( ScrollPane.ScrollBarPolicy.NEVER );
+        installedProgramsSection.setVbarPolicy( ScrollPane.ScrollBarPolicy.NEVER );
+        installedProgramsSection.setStyle( "-fx-background-color: transparent;" );
+        installedProgramsSection.skinProperty().addListener( ( obs, oldSkin, newSkin ) ->
+        {
+            Node viewport = installedProgramsSection.lookup( ".viewport" );
+            if ( viewport != null )
+            {
+                viewport.setStyle( "-fx-background-color: transparent;" );
+            }
+        } );
+        installedProgramsSection.setPannable( true );
+        installedProgramsSection.setFitToWidth( true );
+//        installedProgramsSection.setPrefWidth( 200 );
+        installedProgramsSection.setMinWidth( Region.USE_PREF_SIZE );
+        installedProgramsSection.setMaxWidth( Region.USE_PREF_SIZE );
+
+        installedProgramsSection.setContent( createContentForProgramsSection( installedPrograms ) );
+
+        rootContainer.setRight( installedProgramsSection );
+        installedProgramsSection.setVisible( true );
+        installedProgramsSection.setManaged( true );
+    }
+
+    private VBox createContentForProgramsSection( List< InstalledProgram > installedPrograms )
+    {
+        VBox content = new VBox();
+        content.setAlignment( Pos.CENTER );
+        content.setSpacing( 5 );
+        content.setPadding( new Insets( 5 ) );
+        content.setStyle( "-fx-background-color: transparent;" );
+
+        Background programContainerBackground = new Background( new BackgroundFill(
+                Color.BLACK,
+                new CornerRadii( 10 ),
+                Insets.EMPTY
+        ) );
+
+        installedPrograms.forEach( program ->
+        {
+            VBox programContainer = new VBox();
+            programContainer.setAlignment( Pos.CENTER );
+            programContainer.setBackground( programContainerBackground );
+
+            Text name = new Text( program.getName() );
+            name.setFill( Color.WHITE );
+            programContainer.getChildren().add( name );
+
+            Text version = new Text( program.getVersion() );
+            version.setFill( Color.WHITE );
+            programContainer.getChildren().add( version );
+
+            Text path = new Text( program.getAppPath() );
+            path.setStyle( "-fx-font-size: 10px; -fx-fill: #bbbbbb;" );
+            programContainer.getChildren().add( path );
+
+            content.getChildren().add( programContainer );
+        } );
+        return content;
+    }
+
+    private void showError( Throwable error )
+    {
+        Text errorText = new Text( "Failed to load installed programs:\n" + error.getMessage() );
+        errorText.setFill( Color.RED );
+
+        StackPane errorPane = new StackPane( errorText );
+        errorPane.setAlignment( Pos.CENTER );
+
+        rootContainer.setRight( errorPane );
+    }
+
+    public BorderPane getRootContainer()
+    {
+        return rootContainer;
     }
 }

@@ -1,9 +1,14 @@
+/**
+ * This class is for ALL the modules in the project i.e UI, Backend, app.
+ * Do not add dependencies here unless all the modules need them.
+ */
+
 plugins {
     id("java")
 }
 
 group = "com.sahdkhan"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
