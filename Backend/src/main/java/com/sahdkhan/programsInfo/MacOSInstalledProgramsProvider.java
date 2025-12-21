@@ -1,8 +1,7 @@
-package com.sahdkhan.programs;
-
+package com.sahdkhan.programsInfo;
 
 import com.sahdkhan.collections.InstalledProgram;
-import com.sahdkhan.utilities.OSDetector;
+import com.sahdkhan.utilities.StringEditor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,25 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Programs
+/**
+ * This class provides methods to get the list of installed programs on macOS.
+ * It implements the InstalledProgramsProvider interface.
+ */
+public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
 {
-    /**
-     *
-     * @return
-     * @throws IOException
-     */
-    public static List< InstalledProgram > getInstalledPrograms()
-            throws IOException
-    {
-        if ( OSDetector.isMac() )
-        {
-            return macGetInstalledPrograms();
-        }
-        // TODO: Implement windows and linux methods
-        return List.of();
-    }
-
-    private static List< InstalledProgram > macGetInstalledPrograms() throws IOException
+    @Override
+    public List< InstalledProgram > getInstalledPrograms() throws Exception
     {
         ProcessBuilder pb = new ProcessBuilder(
                 "find", "/Applications",
@@ -90,6 +78,14 @@ public class Programs
         return programs;
     }
 
+    /**
+     * Reads a plist file and returns its key-value pairs as a map.
+     * Used by macGetInstalledPrograms.
+     *
+     * @param plistPath Path to the plist file.
+     * @return Map of key-value pairs from the plist file.
+     * @throws IOException if an I/O error occurs.
+     */
     private static Map< String, String > readPlist( Path plistPath ) throws IOException
     {
         ProcessBuilder pb = new ProcessBuilder(
@@ -115,8 +111,8 @@ public class Programs
                 String left = line.substring( 0, arrow ).trim();
                 String right = line.substring( arrow + 2 ).trim();
 
-                String key = stripQuotes( left );
-                String value = stripQuotes( stripTrailingComma( right ) );
+                String key = StringEditor.stripQuotes( left );
+                String value = StringEditor.stripQuotes( StringEditor.stripTrailingComma( right ) );
 
                 if ( !key.isEmpty() )
                 {
@@ -130,6 +126,13 @@ public class Programs
         return values;
     }
 
+    /**
+     * Waits for the given process to complete and throws an IOException if it exits with a non-zero code.
+     *
+     * @param p    The process to wait for.
+     * @param what A description of the process for error messages.
+     * @throws IOException if the process exits with a non-zero code or is interrupted.
+     */
     private static void waitForOrThrow( Process p, String what ) throws IOException
     {
         try
@@ -145,20 +148,5 @@ public class Programs
             Thread.currentThread().interrupt();
             throw new IOException( "Interrupted while running: " + what, e );
         }
-    }
-
-    private static String stripQuotes( String s )
-    {
-        s = s.trim();
-        if ( s.startsWith( "\"" ) ) s = s.substring( 1 );
-        if ( s.endsWith( "\"" ) ) s = s.substring( 0, s.length() - 1 );
-        return s.trim();
-    }
-
-    private static String stripTrailingComma( String s )
-    {
-        s = s.trim();
-        if ( s.endsWith( "," ) ) s = s.substring( 0, s.length() - 1 );
-        return s.trim();
     }
 }

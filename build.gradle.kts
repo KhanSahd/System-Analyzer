@@ -1,8 +1,3 @@
-/**
- * This class is for ALL the modules in the project i.e UI, Backend, app.
- * Do not add dependencies here unless all the modules need them.
- */
-
 plugins {
     id("java")
 }
@@ -12,6 +7,15 @@ version = "1.0.0"
 
 repositories {
     mavenCentral()
+}
+
+subprojects {
+    apply(plugin = "java")
+
+    dependencies {
+        compileOnly("org.projectlombok:lombok:1.18.42")
+        annotationProcessor("org.projectlombok:lombok:1.18.42")
+    }
 }
 
 dependencies {

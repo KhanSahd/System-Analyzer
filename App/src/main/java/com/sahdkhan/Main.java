@@ -21,6 +21,7 @@ public class Main extends Application
         Scene scene = new Scene( systemAnalyzerUI.getRootContainer(), 1000, 1000 );
         scene.setFill( Color.HONEYDEW );
         primaryStage.setScene( scene );
+        primaryStage.setTitle( "System Analyzer" );
         primaryStage.show();
     }
 }
