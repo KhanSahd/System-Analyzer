@@ -5,21 +5,21 @@ import com.sahdkhan.collections.InstalledProgram;
 import com.sahdkhan.displayAndGPUInfo.DisplayAndGPUInfoProvider;
 import com.sahdkhan.displayAndGPUInfo.DisplayAndGPUInfoProviderFactory;
 import com.sahdkhan.programsInfo.InstalledProgramsFactory;
-import javafx.concurrent.Task;
+import com.sahdkhan.systemSoftwareInfo.SystemSoftwareInfoProvider;
+import com.sahdkhan.systemSoftwareInfo.SystemSoftwareInfoProviderFactory;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import lombok.Getter;
 
-import javax.swing.text.Utilities;
 import java.util.List;
 import java.util.Objects;
 
@@ -83,6 +83,7 @@ public class SystemAnalyzerUI
 
         loadInstalledProgramsAsync();
         loadDisplayAndGPUInfo();
+        loadSystemSoftwareInfo();
     }
 
     /**
@@ -112,33 +113,32 @@ public class SystemAnalyzerUI
      */
     private void loadInstalledProgramsAsync()
     {
-        Task< List< InstalledProgram > > task = new Task<>()
-        {
-            @Override
-            protected List< InstalledProgram > call() throws Exception
-            {
-                return InstalledProgramsFactory.create().getInstalledPrograms();
-            }
-        };
+        loadingPane.setVisible( true );
+        loadingPane.setManaged( true );
 
-        task.setOnSucceeded( event ->
-        {
-            List< InstalledProgram > programs = task.getValue();
-
-            createInstalledProgramsSection( programs );
-            loadingPane.setVisible( false );
-            loadingPane.setManaged( false );
-        } );
-
-        task.setOnFailed( event ->
-        {
-            Throwable error = task.getException();
-            showError( error );
-        } );
-
-        Thread thread = new Thread( task, "InstalledProgramsLoader" );
-        thread.setDaemon( true );
-        thread.start();
+        InstalledProgramsFactory.create()
+                .getInstalledProgramsAsync()
+                .thenAccept( programs ->
+                        Platform.runLater( () ->
+                        {
+                            createInstalledProgramsSection( programs );
+                        } )
+                )
+                .exceptionally( ex ->
+                {
+                    Platform.runLater( () ->
+                    {
+                        showError( ex.getCause() != null ? ex.getCause() : ex );
+                    } );
+                    return null;
+                } )
+                .whenComplete( ( r, t ) ->
+                        Platform.runLater( () ->
+                        {
+                            loadingPane.setVisible( false );
+                            loadingPane.setManaged( false );
+                        } )
+                );
     }
 
 
@@ -303,6 +303,44 @@ public class SystemAnalyzerUI
         wrapper.setAlignment( Pos.TOP_LEFT );
 
         rootContainer.setLeft( wrapper );
+    }
+
+    private void loadSystemSoftwareInfo()
+    {
+        VBox systemInfoCard = new VBox();
+        systemInfoCard.setMaxHeight( Region.USE_PREF_SIZE );
+        systemInfoCard.setMaxWidth( Region.USE_PREF_SIZE );
+        systemInfoCard.setBackground( UIHelper.getCardBackground() );
+        systemInfoCard.setEffect( UIHelper.getCardDropShadow() );
+        SystemSoftwareInfoProvider provider = SystemSoftwareInfoProviderFactory.create();
+        systemInfoCard.setAlignment( Pos.TOP_CENTER );
+        systemInfoCard.setSpacing( 10 );
+        systemInfoCard.setPadding( new Insets( 10 ) );
+        systemInfoCard.getChildren().add( UIHelper.createTextItem( "System and OS Information" ) );
+        systemInfoCard.getChildren().add( new Separator() );
+        GridPane infoGrid = new GridPane();
+        infoGrid.setHgap( 10 );
+        infoGrid.setVgap( 5 );
+        infoGrid.add( UIHelper.createTextItem( "Computer Name:" ), 0, 0 );
+        infoGrid.add( UIHelper.createTextItem( provider.getComputerName() ), 1, 0 );
+        infoGrid.add( UIHelper.createTextItem( "OS Name:" ), 0, 1 );
+        infoGrid.add( UIHelper.createTextItem( provider.getOSName() ), 1, 1 );
+        infoGrid.add( UIHelper.createTextItem( "OS Version:" ), 0, 2 );
+        infoGrid.add( UIHelper.createTextItem( provider.getOSVersion() ), 1, 2 );
+        infoGrid.add( UIHelper.createTextItem( "User:" ), 0, 3 );
+        infoGrid.add( UIHelper.createTextItem( provider.getSystemUser() ), 1, 3 );
+        infoGrid.add( UIHelper.createTextItem( "System Uptime:" ), 0, 4 );
+        infoGrid.add( UIHelper.createTextItem( provider.getSystemUptime() ), 1, 4 );
+        infoGrid.add( UIHelper.createTextItem( "Kernel Version:" ), 0, 5 );
+        infoGrid.add( UIHelper.createTextItem( provider.getKernelVersion() ), 1, 5 );
+
+
+        systemInfoCard.getChildren().add( infoGrid );
+        StackPane wrapper = new StackPane( systemInfoCard );
+        StackPane.setMargin( systemInfoCard, new Insets( 10 ) );
+        wrapper.setAlignment( Pos.TOP_CENTER );
+
+        rootContainer.setCenter( wrapper );
     }
 
 }
