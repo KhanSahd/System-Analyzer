@@ -72,7 +72,7 @@ public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
             String version = plist.getOrDefault( "CFBundleShortVersionString",
                     plist.getOrDefault( "CFBundleVersion", "" ) );
 
-            programs.add( new InstalledProgram( name, version, appPath.toString() ) );
+            programs.add( new InstalledProgram( name, version ) );
         }
 
         return programs;

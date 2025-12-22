@@ -14,7 +14,7 @@ import java.util.List;
 public class DisplayInfo
 {
     private String model;
-    private int cores;
+    private String cores;
     private boolean hasMultipleDisplays;
     List< Monitor > monitors = new ArrayList<>();
 

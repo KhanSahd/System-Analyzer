@@ -19,10 +19,10 @@ public class DisplayAndGPUInfoProviderFactory
      */
     public static DisplayAndGPUInfoProvider create()
     {
-//        if ( OSDetector.isWindows() )
-//        {
-//            return new WindowsDisplayAndGPUInfoProvider();
-//        }
+        if ( OSDetector.isWindows() )
+        {
+            return new WindowsDisplayAndGPUInfoProvider();
+        }
         if ( OSDetector.isMac() )
         {
             return new MacOSDisplayAndGPUInfoProvider();

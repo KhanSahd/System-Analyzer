@@ -22,10 +22,10 @@ public class InstalledProgramsFactory
      */
     public static InstalledProgramsProvider create()
     {
-//        if ( OSDetector.isWindows() )
-//        {
-//            return new WindowsInstalledProgramsProvider();
-//        }
+        if ( OSDetector.isWindows() )
+        {
+            return new WindowsInstalledProgramsProvider();
+        }
 
         if ( OSDetector.isMac() )
         {

@@ -8,7 +8,7 @@ public interface DisplayAndGPUInfoProvider
 {
     String getModel();
 
-    int getCores();
+    String getCores();
 
     boolean hasMultipleDisplays();
 

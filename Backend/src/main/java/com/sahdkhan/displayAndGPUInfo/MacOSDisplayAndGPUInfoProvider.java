@@ -20,7 +20,7 @@ public class MacOSDisplayAndGPUInfoProvider implements DisplayAndGPUInfoProvider
         ObjectMapper mapper = new ObjectMapper();
         JsonNode displayJson = mapper.readTree( rawJson ).get( "SPDisplaysDataType" ).get( 0 );
         displayInfo.setModel( StringEditor.stripQuotes( displayJson.get( "sppci_model" ).toString() ) );
-        displayInfo.setCores( Integer.parseInt( StringEditor.stripQuotes( displayJson.get( "sppci_cores" ).toString() ) ) );
+        displayInfo.setCores( StringEditor.stripQuotes( displayJson.get( "sppci_cores" ).toString() ) );
 
         // Check for multiple displays and mark flag.
         if ( displayJson.get( "spdisplays_ndrvs" ).size() > 1 )
@@ -110,7 +110,7 @@ public class MacOSDisplayAndGPUInfoProvider implements DisplayAndGPUInfoProvider
     }
 
     @Override
-    public int getCores()
+    public String getCores()
     {
         return displayInfo.getCores();
     }
