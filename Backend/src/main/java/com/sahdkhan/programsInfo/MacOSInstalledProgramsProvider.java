@@ -1,17 +1,22 @@
 package com.sahdkhan.programsInfo;
 
 import com.sahdkhan.collections.InstalledProgram;
+import com.sahdkhan.utilities.Executor;
 import com.sahdkhan.utilities.StringEditor;
+import com.sahdkhan.utilities.collections.ExecutionResult;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 /**
  * This class provides methods to get the list of installed programs on macOS.
@@ -20,7 +25,52 @@ import java.util.Map;
 public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
 {
     @Override
-    public List< InstalledProgram > getInstalledPrograms() throws Exception
+    public CompletableFuture< List< InstalledProgram > > getInstalledProgramsAsync()
+    {
+        return CompletableFuture.supplyAsync( () ->
+        {
+            try
+            {
+                List< Path > appBundles = getAppPaths();
+                List< InstalledProgram > programs = new ArrayList<>();
+
+                for ( Path appPath : appBundles )
+                {
+                    Path plistPath = appPath.resolve( "Contents" ).resolve( "Info.plist" );
+                    if ( !Files.exists( plistPath ) )
+                    {
+                        continue;
+                    }
+
+                    Map< String, String > plist = readPlist( plistPath );
+
+                    String defaultName = appPath.getFileName() != null
+                            ? appPath.getFileName().toString().replace( ".app", "" )
+                            : appPath.toString();
+
+                    String name = plist.getOrDefault(
+                            "CFBundleName",
+                            plist.getOrDefault( "CFBundleDisplayName", defaultName )
+                    );
+
+                    String version = plist.getOrDefault(
+                            "CFBundleShortVersionString",
+                            plist.getOrDefault( "CFBundleVersion", "" )
+                    );
+
+                    programs.add( new InstalledProgram( name, version ) );
+                }
+
+                return programs;
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException( e );
+            }
+        } );
+    }
+
+    private static List< Path > getAppPaths() throws IOException
     {
         ProcessBuilder pb = new ProcessBuilder(
                 "find", "/Applications",
@@ -29,53 +79,23 @@ public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
                 "-type", "d",
                 "-name", "*.app"
         );
-        pb.redirectErrorStream( true );
-
-        Process process = pb.start();
+        ExecutionResult processResult =
+                Executor.execute( pb, Duration.ofSeconds( 3 ) );
 
         List< Path > appBundles = new ArrayList<>();
-
-        try ( BufferedReader reader = new BufferedReader(
-                new InputStreamReader( process.getInputStream() ) ) )
+        if ( processResult.success() )
         {
-            String line;
-            while ( ( line = reader.readLine() ) != null )
+            for ( String line : processResult.output() )
             {
-                if ( !line.isBlank() )
-                {
-                    appBundles.add( Path.of( line.trim() ) );
-                }
+                appBundles.add( Path.of( line.trim() ) );
             }
         }
-
-        waitForOrThrow( process, "find /Applications" );
-
-        List< InstalledProgram > programs = new ArrayList<>();
-
-        for ( Path appPath : appBundles )
+        else
         {
-            Path plistPath = appPath.resolve( "Contents" ).resolve( "Info.plist" );
-            if ( !Files.exists( plistPath ) )
-            {
-                continue;
-            }
-
-            Map< String, String > plist = readPlist( plistPath );
-
-            String defaultName = appPath.getFileName() != null
-                    ? appPath.getFileName().toString().replace( ".app", "" )
-                    : appPath.toString();
-
-            String name = plist.getOrDefault( "CFBundleName",
-                    plist.getOrDefault( "CFBundleDisplayName", defaultName ) );
-
-            String version = plist.getOrDefault( "CFBundleShortVersionString",
-                    plist.getOrDefault( "CFBundleVersion", "" ) );
-
-            programs.add( new InstalledProgram( name, version ) );
+            throw new IOException( "Failed to get installed programs: " +
+                    processResult.error() );
         }
-
-        return programs;
+        return appBundles;
     }
 
     /**
@@ -88,20 +108,15 @@ public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
      */
     private static Map< String, String > readPlist( Path plistPath ) throws IOException
     {
-        ProcessBuilder pb = new ProcessBuilder(
-                "plutil", "-p", plistPath.toString()
-        );
-        pb.redirectErrorStream( true );
+        ProcessBuilder pb = new ProcessBuilder( "plutil", "-p", plistPath.toString() );
+        ExecutionResult processResult =
+                Executor.execute( pb, Duration.ofSeconds( 3 ) );
 
-        Process p = pb.start();
-
-        Map< String, String > values = new HashMap<>();
-
-        try ( BufferedReader reader = new BufferedReader(
-                new InputStreamReader( p.getInputStream() ) ) )
+        if ( processResult.success() )
         {
-            String line;
-            while ( ( line = reader.readLine() ) != null )
+            Map< String, String > values = new HashMap<>();
+
+            for ( String line : processResult.output() )
             {
                 // common format:  "CFBundleName" => "Safari"
                 // also may be:    "SomeKey" => 123
@@ -119,34 +134,10 @@ public class MacOSInstalledProgramsProvider implements InstalledProgramsProvider
                     values.put( key, value );
                 }
             }
+            return values;
         }
 
-        waitForOrThrow( p, "plutil -p " + plistPath );
-
-        return values;
-    }
-
-    /**
-     * Waits for the given process to complete and throws an IOException if it exits with a non-zero code.
-     *
-     * @param p    The process to wait for.
-     * @param what A description of the process for error messages.
-     * @throws IOException if the process exits with a non-zero code or is interrupted.
-     */
-    private static void waitForOrThrow( Process p, String what ) throws IOException
-    {
-        try
-        {
-            int code = p.waitFor();
-            if ( code != 0 )
-            {
-                throw new IOException( what + " failed with exit code " + code );
-            }
-        }
-        catch ( InterruptedException e )
-        {
-            Thread.currentThread().interrupt();
-            throw new IOException( "Interrupted while running: " + what, e );
-        }
+        throw new IOException( "Failed to read plist " + plistPath +
+                ": " + processResult.error() );
     }
 }
