@@ -262,9 +262,9 @@ public class SystemAnalyzerUI
         displayInfoBox.setAlignment( Pos.TOP_LEFT );
         displayInfoBox.setSpacing( 10 );
         displayInfoBox.setPadding( new Insets( 10 ) );
-        displayInfoBox.getChildren().add( UIHelper.createTextItem( "Display and GPU Information" ) );
+        displayInfoBox.getChildren().add( UIHelper.createHeaderTextItem( "Display and GPU Information" ) );
         displayInfoBox.getChildren().add( new Separator() );
-        displayInfoBox.getChildren().add( UIHelper.createTextItem( "GPU" ) );
+        displayInfoBox.getChildren().add( UIHelper.createSubHeaderTextItem( "GPU" ) );
         GridPane gpuGrid = new GridPane();
         gpuGrid.setHgap( 10 );
         gpuGrid.setVgap( 5 );
@@ -279,7 +279,7 @@ public class SystemAnalyzerUI
         displayInfoBox.getChildren().add( new Separator() );
 
         displayInfoBox.getChildren().add(
-                UIHelper.createTextItem( provider.hasMultipleDisplays() ? "Monitors" : "Monitor" )
+                UIHelper.createSubHeaderTextItem( provider.hasMultipleDisplays() ? "Monitors" : "Monitor" )
         );
         // GridPane to hold the info in two columns
         provider.getMonitors().forEach( monitor ->
@@ -316,7 +316,7 @@ public class SystemAnalyzerUI
         systemInfoCard.setAlignment( Pos.TOP_CENTER );
         systemInfoCard.setSpacing( 10 );
         systemInfoCard.setPadding( new Insets( 10 ) );
-        systemInfoCard.getChildren().add( UIHelper.createTextItem( "System and OS Information" ) );
+        systemInfoCard.getChildren().add( UIHelper.createHeaderTextItem( "System and OS Information" ) );
         systemInfoCard.getChildren().add( new Separator() );
         GridPane infoGrid = new GridPane();
         infoGrid.setHgap( 10 );

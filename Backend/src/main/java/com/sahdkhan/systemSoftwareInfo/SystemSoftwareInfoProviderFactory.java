@@ -13,7 +13,10 @@ public class SystemSoftwareInfoProviderFactory
         if ( OSDetector.isMac() )
         {
             return new MacSystemSoftwareInfoProvider();
-
+        }
+        if ( OSDetector.isWindows() )
+        {
+            return new WindowsSystemSoftwareInfoProvider();
         }
         throw new UnsupportedOperationException( "Unsupported OS" );
     }

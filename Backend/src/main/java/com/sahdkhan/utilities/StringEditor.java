@@ -28,4 +28,19 @@ public class StringEditor
         if ( s.endsWith( "," ) ) s = s.substring( 0, s.length() - 1 );
         return s.trim();
     }
+
+    public static String stripBrackets( String s )
+    {
+        s = s.trim();
+        if ( s.startsWith( "(" ) && s.endsWith( ")" ) ) {
+            s = s.substring( 1, s.length() - 1 );
+        }
+        else if ( s.startsWith( "[" ) && s.endsWith( "]" ) ) {
+            s = s.substring( 1, s.length() - 1 );
+        }
+        else if ( s.startsWith( "{" ) && s.endsWith( "}" ) ) {
+            s = s.substring( 1, s.length() - 1 );
+        }
+        return s.trim();
+    }
 }

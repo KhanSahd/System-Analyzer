@@ -2,6 +2,13 @@ package com.sahdkhan.collections;
 
 import lombok.Getter;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 @Getter
 public class Monitor
 {
@@ -23,4 +30,20 @@ public class Monitor
         this.pixelDensity = pixelDensity;
         this.id = id;
     }
+
+    public static Path extractResourceToTempFile( String resourcePath )
+            throws IOException
+    {
+        try ( InputStream in = Monitor.class.getResourceAsStream(resourcePath )) {
+            if (in == null) {
+                throw new FileNotFoundException("Resource not found: " + resourcePath);
+            }
+
+            Path tempFile = Files.createTempFile("monitor-script-", ".ps1");
+            Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING );
+            tempFile.toFile().deleteOnExit();
+            return tempFile;
+        }
+    }
+
 }

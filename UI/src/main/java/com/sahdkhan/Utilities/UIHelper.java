@@ -101,4 +101,12 @@ public class UIHelper
         text.setFill( color );
         return text;
     }
+
+    public static Text createSubHeaderTextItem( final String textToAdd )
+    {
+        Text text = new Text( textToAdd );
+        text.setStyle( "-fx-font-size: 14px;" );
+        text.setFill( Color.BLACK );
+        return text;
+    }
 }
